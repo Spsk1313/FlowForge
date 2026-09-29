@@ -10,4 +10,15 @@ public record CreateWorkflowRequest(
 
     @Size(max = 500)
     String description
-) {}
+) {
+    public CreateWorkflowRequest {
+        if (name != null) {
+           name = name.strip();
+        }
+
+        if (description != null) {
+            description = description.strip();
+        }
+
+    }
+}

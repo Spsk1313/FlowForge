@@ -97,4 +97,48 @@ class WorkflowControllerTest {
                 .createWorkflow(any(CreateWorkflowRequest.class));
 
     }
+
+    @Test
+    void createWorkflow_ShouldAcceptRawNameThatNormalizesTo100Characters() {
+        String normalizedName = "a".repeat(100);
+        String rawName = "   " + normalizedName + "   ";
+
+        String requestJson = """
+            {
+              "name": "%s",
+              "description": "testDescription"
+            }
+            """.formatted(rawName);
+
+        WorkflowResponse response =
+                new WorkflowResponse(
+                        1L,
+                        normalizedName,
+                        "testDescription",
+                        WorkflowStatus.DRAFT,
+                        Instant.parse("2026-09-29T20:00:00Z")
+                );
+
+        CreateWorkflowRequest expectedRequest =
+                new CreateWorkflowRequest(
+                        normalizedName,
+                        "testDescription"
+                );
+
+        given(workflowService.createWorkflow(expectedRequest))
+                .willReturn(response);
+
+        assertThat(
+                mvcTester.post()
+                        .uri("/api/workflows")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(requestJson)
+        )
+                .hasStatus(HttpStatus.CREATED);
+
+        then(workflowService)
+                .should()
+                .createWorkflow(expectedRequest);
+    }
 }
