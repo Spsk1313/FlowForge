@@ -29,6 +29,10 @@ public class WorkflowService {
 
     private WorkflowResponse toResponse(Workflow workflow) {
         return new WorkflowResponse(
-                workflow.getId(), workflow.getName(), workflow.getDescription(), workflow.getStatus(), workflow.getCreatedAt());
+                workflow.getId(),
+                workflow.getName(),
+                workflow.getDescription(),
+                workflow.getStatus(),
+                workflow.getCreatedAt());
     }
 }
