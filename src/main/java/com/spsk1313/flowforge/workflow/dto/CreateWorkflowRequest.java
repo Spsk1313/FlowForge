@@ -1,0 +1,13 @@
+package com.spsk1313.flowforge.workflow.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record CreateWorkflowRequest(
+    @NotBlank
+    @Size(max = 100)
+    String name,
+
+    @Size(max = 500)
+    String description
+) {}
