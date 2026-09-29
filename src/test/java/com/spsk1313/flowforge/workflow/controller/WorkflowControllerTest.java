@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import com.spsk1313.flowforge.workflow.dto.CreateWorkflowRequest;
 import com.spsk1313.flowforge.workflow.dto.WorkflowResponse;
 import com.spsk1313.flowforge.workflow.entity.WorkflowStatus;
+import com.spsk1313.flowforge.workflow.exception.WorkflowNotFoundException;
 import com.spsk1313.flowforge.workflow.service.WorkflowService;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
@@ -105,5 +106,44 @@ class WorkflowControllerTest {
                 .hasStatus(HttpStatus.CREATED);
 
         then(workflowService).should().createWorkflow(expectedRequest);
+    }
+
+    @Test
+    void getWorkflowById_ShouldReturnWorkflowWhenValidId() {
+        Long workflowId = 1L;
+        Instant createdAt = Instant.parse("2026-09-29T20:00:00Z");
+
+        WorkflowResponse response =
+                new WorkflowResponse(workflowId, "testName", "testDescription", WorkflowStatus.DRAFT, createdAt);
+
+        given(workflowService.getWorkflowById(workflowId)).willReturn(response);
+
+        assertThat(mvcTester.get().uri("/api/workflows/{id}", workflowId).accept(MediaType.APPLICATION_JSON))
+                .hasStatus(HttpStatus.OK)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .isLenientlyEqualTo("""
+                    {
+                      "id": 1,
+                      "name": "testName",
+                      "description": "testDescription",
+                      "status": "DRAFT",
+                      "createdAt": "2026-09-29T20:00:00Z"
+                    }
+                    """);
+
+        then(workflowService).should().getWorkflowById(workflowId);
+    }
+
+    @Test
+    void getWorkflowById_ShouldReturn404WhenWorkflowDoesNotExist() {
+        Long workflowId = 999L;
+
+        given(workflowService.getWorkflowById(workflowId)).willThrow(new WorkflowNotFoundException(workflowId));
+
+        assertThat(mvcTester.get().uri("/api/workflows/{id}", workflowId).accept(MediaType.APPLICATION_JSON))
+                .hasStatus(HttpStatus.NOT_FOUND);
+
+        then(workflowService).should().getWorkflowById(workflowId);
     }
 }
