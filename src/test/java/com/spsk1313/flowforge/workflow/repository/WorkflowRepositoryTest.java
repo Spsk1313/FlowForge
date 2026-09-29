@@ -1,5 +1,7 @@
 package com.spsk1313.flowforge.workflow.repository;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.spsk1313.flowforge.workflow.entity.Workflow;
 import com.spsk1313.flowforge.workflow.entity.WorkflowStatus;
 import jakarta.persistence.EntityManager;
@@ -13,11 +15,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-@DataJpaTest(
-        properties = "spring.jpa.hibernate.ddl-auto=validate"
-)
+@DataJpaTest(properties = "spring.jpa.hibernate.ddl-auto=validate")
 @Testcontainers
 public class WorkflowRepositoryTest {
 
@@ -53,14 +51,9 @@ public class WorkflowRepositoryTest {
     void shouldRejectBlankNameAtDatabaseLevel() {
         assertThrows(
                 DataIntegrityViolationException.class,
-                () -> jdbcTemplate.update(
-                        """
+                () -> jdbcTemplate.update("""
                                 INSERT INTO workflows (name, description)
                                 VALUES (?, ?)
-                                """,
-                        "   ",
-                        "Processes incoming orders"
-                )
-        );
+                                """, "   ", "Processes incoming orders"));
     }
 }
