@@ -1,9 +1,16 @@
 package com.spsk1313.flowforge.workflow.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+
 import com.spsk1313.flowforge.workflow.dto.CreateWorkflowRequest;
 import com.spsk1313.flowforge.workflow.dto.WorkflowResponse;
 import com.spsk1313.flowforge.workflow.entity.WorkflowStatus;
 import com.spsk1313.flowforge.workflow.service.WorkflowService;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -12,14 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import tools.jackson.databind.ObjectMapper;
-
-import java.time.Instant;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.any;
 
 @WebMvcTest(WorkflowController.class)
 class WorkflowControllerTest {
@@ -35,33 +34,21 @@ class WorkflowControllerTest {
 
     @Test
     void createWorkflow_ShouldReturnWorkflowAnd201() throws Exception {
-        CreateWorkflowRequest request =
-                new CreateWorkflowRequest(
-                        "testName",
-                        "testDescription"
-                );
+        CreateWorkflowRequest request = new CreateWorkflowRequest("testName", "testDescription");
 
         Instant createdAt = Instant.parse("2026-09-29T20:00:00Z");
 
         WorkflowResponse response =
-                new WorkflowResponse(
-                        1L,
-                        "testName",
-                        "testDescription",
-                        WorkflowStatus.DRAFT,
-                        createdAt
-                );
+                new WorkflowResponse(1L, "testName", "testDescription", WorkflowStatus.DRAFT, createdAt);
 
-        given(workflowService.createWorkflow(request))
-                .willReturn(response);
+        given(workflowService.createWorkflow(request)).willReturn(response);
 
-        assertThat(
-                mvcTester.post()
+        assertThat(mvcTester
+                        .post()
                         .uri("/api/workflows")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-        )
+                        .content(objectMapper.writeValueAsString(request)))
                 .hasStatus(HttpStatus.CREATED)
                 .hasContentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 .bodyJson()
@@ -78,24 +65,16 @@ class WorkflowControllerTest {
 
     @Test
     void createWorkflow_ShouldReturn400_WhenNameIsBlank() throws Exception {
-        CreateWorkflowRequest request =
-                new CreateWorkflowRequest(
-                        "   ",
-                        "testDescription"
-                );
+        CreateWorkflowRequest request = new CreateWorkflowRequest("   ", "testDescription");
 
-        assertThat(
-                mvcTester.post()
+        assertThat(mvcTester
+                        .post()
                         .uri("/api/workflows")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-        )
+                        .content(objectMapper.writeValueAsString(request)))
                 .hasStatus(HttpStatus.BAD_REQUEST);
 
-        then(workflowService)
-                .should(never())
-                .createWorkflow(any(CreateWorkflowRequest.class));
-
+        then(workflowService).should(never()).createWorkflow(any(CreateWorkflowRequest.class));
     }
 
     @Test
@@ -110,35 +89,21 @@ class WorkflowControllerTest {
             }
             """.formatted(rawName);
 
-        WorkflowResponse response =
-                new WorkflowResponse(
-                        1L,
-                        normalizedName,
-                        "testDescription",
-                        WorkflowStatus.DRAFT,
-                        Instant.parse("2026-09-29T20:00:00Z")
-                );
+        WorkflowResponse response = new WorkflowResponse(
+                1L, normalizedName, "testDescription", WorkflowStatus.DRAFT, Instant.parse("2026-09-29T20:00:00Z"));
 
-        CreateWorkflowRequest expectedRequest =
-                new CreateWorkflowRequest(
-                        normalizedName,
-                        "testDescription"
-                );
+        CreateWorkflowRequest expectedRequest = new CreateWorkflowRequest(normalizedName, "testDescription");
 
-        given(workflowService.createWorkflow(expectedRequest))
-                .willReturn(response);
+        given(workflowService.createWorkflow(expectedRequest)).willReturn(response);
 
-        assertThat(
-                mvcTester.post()
+        assertThat(mvcTester
+                        .post()
                         .uri("/api/workflows")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(requestJson)
-        )
+                        .content(requestJson))
                 .hasStatus(HttpStatus.CREATED);
 
-        then(workflowService)
-                .should()
-                .createWorkflow(expectedRequest);
+        then(workflowService).should().createWorkflow(expectedRequest);
     }
 }

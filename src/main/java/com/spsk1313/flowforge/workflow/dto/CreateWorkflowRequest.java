@@ -4,21 +4,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record CreateWorkflowRequest(
-    @NotBlank
-    @Size(max = 100)
-    String name,
+        @NotBlank @Size(max = 100) String name,
 
-    @Size(max = 500)
-    String description
-) {
+        @Size(max = 500) String description) {
     public CreateWorkflowRequest {
         if (name != null) {
-           name = name.strip();
+            name = name.strip();
         }
 
         if (description != null) {
             description = description.strip();
         }
-
     }
 }

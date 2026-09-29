@@ -1,10 +1,9 @@
 package com.spsk1313.flowforge.workflow.entity;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
-
-import java.time.Instant;
 
 @Entity
 @Table(name = "workflows")
@@ -29,12 +28,7 @@ public class Workflow {
     private WorkflowStatus status;
 
     @Generated(event = EventType.INSERT)
-    @Column(
-            name = "created_at",
-            nullable = false,
-            insertable = false,
-            updatable = false
-    )
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private Instant createdAt;
 
     protected Workflow() {}
@@ -56,9 +50,7 @@ public class Workflow {
         }
 
         if (normalizedName.length() > MAX_NAME_LENGTH) {
-            throw new IllegalArgumentException(
-                    "Workflow name must not exceed " + MAX_NAME_LENGTH + " characters"
-            );
+            throw new IllegalArgumentException("Workflow name must not exceed " + MAX_NAME_LENGTH + " characters");
         }
 
         return normalizedName;
@@ -73,10 +65,7 @@ public class Workflow {
 
         if (normalizedDescription.length() > MAX_DESCRIPTION_LENGTH) {
             throw new IllegalArgumentException(
-                    "Workflow description must not exceed "
-                            + MAX_DESCRIPTION_LENGTH
-                            + " characters"
-            );
+                    "Workflow description must not exceed " + MAX_DESCRIPTION_LENGTH + " characters");
         }
 
         return normalizedDescription;

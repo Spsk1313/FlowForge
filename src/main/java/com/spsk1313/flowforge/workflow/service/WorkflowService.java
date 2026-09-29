@@ -19,11 +19,6 @@ public class WorkflowService {
         Workflow workflow = new Workflow(req.name(), req.description());
         Workflow saved = workflowRepository.save(workflow);
         return new WorkflowResponse(
-                saved.getId(),
-                saved.getName(),
-                saved.getDescription(),
-                saved.getStatus(),
-                saved.getCreatedAt()
-        );
+                saved.getId(), saved.getName(), saved.getDescription(), saved.getStatus(), saved.getCreatedAt());
     }
 }
