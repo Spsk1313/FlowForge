@@ -12,6 +12,7 @@ import com.spsk1313.flowforge.workflow.entity.WorkflowStatus;
 import com.spsk1313.flowforge.workflow.exception.WorkflowNotFoundException;
 import com.spsk1313.flowforge.workflow.service.WorkflowService;
 import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -145,5 +146,57 @@ class WorkflowControllerTest {
                 .hasStatus(HttpStatus.NOT_FOUND);
 
         then(workflowService).should().getWorkflowById(workflowId);
+    }
+
+    @Test
+    void getAllWorkflows_ShouldReturnWorkflowsAnd200() {
+        Instant firstCreatedAt = Instant.parse("2026-09-29T20:00:00Z");
+        Instant secondCreatedAt = Instant.parse("2026-09-29T21:00:00Z");
+
+        WorkflowResponse first =
+                new WorkflowResponse(1L, "First Workflow", "First Description", WorkflowStatus.DRAFT, firstCreatedAt);
+
+        WorkflowResponse second = new WorkflowResponse(
+                2L, "Second Workflow", "Second Description", WorkflowStatus.DRAFT, secondCreatedAt);
+
+        given(workflowService.getAllWorkflows()).willReturn(List.of(first, second));
+
+        assertThat(mvcTester.get().uri("/api/workflows").accept(MediaType.APPLICATION_JSON))
+                .hasStatus(HttpStatus.OK)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .isLenientlyEqualTo("""
+                    [
+                      {
+                        "id": 1,
+                        "name": "First Workflow",
+                        "description": "First Description",
+                        "status": "DRAFT",
+                        "createdAt": "2026-09-29T20:00:00Z"
+                      },
+                      {
+                        "id": 2,
+                        "name": "Second Workflow",
+                        "description": "Second Description",
+                        "status": "DRAFT",
+                        "createdAt": "2026-09-29T21:00:00Z"
+                      }
+                    ]
+                    """);
+
+        then(workflowService).should().getAllWorkflows();
+    }
+
+    @Test
+    void getAllWorkflows_ShouldReturnEmptyListAnd200() {
+        given(workflowService.getAllWorkflows()).willReturn(List.of());
+
+        assertThat(mvcTester.get().uri("/api/workflows").accept(MediaType.APPLICATION_JSON))
+                .hasStatus(HttpStatus.OK)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .isLenientlyEqualTo("[]");
+
+        then(workflowService).should().getAllWorkflows();
     }
 }
