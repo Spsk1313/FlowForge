@@ -54,7 +54,6 @@ class WorkflowServiceTest {
     private Workflow mockWorkflow(Long id, String name, String description, Instant createdAt) {
 
         Workflow workflow = mock(Workflow.class);
-
         given(workflow.getId()).willReturn(id);
         given(workflow.getName()).willReturn(name);
         given(workflow.getDescription()).willReturn(description);
