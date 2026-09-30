@@ -4,6 +4,7 @@ import com.spsk1313.flowforge.workflow.dto.CreateWorkflowRequest;
 import com.spsk1313.flowforge.workflow.dto.WorkflowResponse;
 import com.spsk1313.flowforge.workflow.service.WorkflowService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,12 @@ public class WorkflowController {
     @GetMapping("/{id}")
     public ResponseEntity<WorkflowResponse> getWorkflowById(@PathVariable Long id) {
         WorkflowResponse response = workflowService.getWorkflowById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<WorkflowResponse>> getAllWorkflows() {
+        List<WorkflowResponse> response = workflowService.getAllWorkflows();
         return ResponseEntity.ok(response);
     }
 }
