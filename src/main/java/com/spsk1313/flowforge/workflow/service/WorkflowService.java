@@ -5,7 +5,10 @@ import com.spsk1313.flowforge.workflow.dto.WorkflowResponse;
 import com.spsk1313.flowforge.workflow.entity.Workflow;
 import com.spsk1313.flowforge.workflow.exception.WorkflowNotFoundException;
 import com.spsk1313.flowforge.workflow.repository.WorkflowRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class WorkflowService {
@@ -25,6 +28,14 @@ public class WorkflowService {
     public WorkflowResponse getWorkflowById(Long id) {
         Workflow workflow = workflowRepository.findById(id).orElseThrow(() -> new WorkflowNotFoundException(id));
         return toResponse(workflow);
+    }
+
+    public List<WorkflowResponse> getAllWorkflows() {
+        return workflowRepository
+                .findAll(Sort.by("createdAt").ascending().and(Sort.by("id").ascending()))
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     private WorkflowResponse toResponse(Workflow workflow) {
