@@ -76,7 +76,7 @@ public class Workflow {
     }
 
     public void updateDescription(String description) {
-        this.description = description;
+        this.description = validateDescription(description);
     }
 
     public Long getId() {
