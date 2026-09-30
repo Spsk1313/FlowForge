@@ -7,6 +7,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 
 import com.spsk1313.flowforge.workflow.dto.CreateWorkflowRequest;
+import com.spsk1313.flowforge.workflow.dto.UpdateWorkflowRequest;
 import com.spsk1313.flowforge.workflow.dto.WorkflowResponse;
 import com.spsk1313.flowforge.workflow.entity.WorkflowStatus;
 import com.spsk1313.flowforge.workflow.exception.WorkflowNotFoundException;
@@ -198,5 +199,110 @@ class WorkflowControllerTest {
                 .isLenientlyEqualTo("[]");
 
         then(workflowService).should().getAllWorkflows();
+    }
+
+    @Test
+    void updateWorkflow_ShouldReturnUpdatedWorkflowAnd200() throws Exception {
+        Long workflowId = 1L;
+
+        UpdateWorkflowRequest request = new UpdateWorkflowRequest("Updated Name", "Updated Description");
+
+        WorkflowResponse response = new WorkflowResponse(
+                workflowId,
+                "Updated Name",
+                "Updated Description",
+                WorkflowStatus.DRAFT,
+                Instant.parse("2026-09-29T20:00:00Z"));
+
+        given(workflowService.updateWorkflow(workflowId, request)).willReturn(response);
+
+        assertThat(mvcTester
+                        .put()
+                        .uri("/api/workflows/{id}", workflowId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .hasStatus(HttpStatus.OK)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .isLenientlyEqualTo("""
+                    {
+                      "id": 1,
+                      "name": "Updated Name",
+                      "description": "Updated Description",
+                      "status": "DRAFT",
+                      "createdAt": "2026-09-29T20:00:00Z"
+                    }
+                    """);
+
+        then(workflowService).should().updateWorkflow(workflowId, request);
+    }
+
+    @Test
+    void updateWorkflow_ShouldReturn404WhenWorkflowDoesNotExist() throws Exception {
+
+        Long workflowId = 999L;
+
+        UpdateWorkflowRequest request = new UpdateWorkflowRequest("Updated Name", "Updated Description");
+
+        given(workflowService.updateWorkflow(workflowId, request)).willThrow(new WorkflowNotFoundException(workflowId));
+
+        assertThat(mvcTester
+                        .put()
+                        .uri("/api/workflows/{id}", workflowId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .hasStatus(HttpStatus.NOT_FOUND);
+
+        then(workflowService).should().updateWorkflow(workflowId, request);
+    }
+
+    @Test
+    void updateWorkflow_ShouldReturn400AndNotCallServiceWhenRequestIsInvalid() {
+        Long workflowId = 1L;
+
+        String requestJson = """
+            {
+              "name": "   ",
+              "description": "Updated Description"
+            }
+            """;
+
+        assertThat(mvcTester
+                        .put()
+                        .uri("/api/workflows/{id}", workflowId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+
+        then(workflowService).should(never()).updateWorkflow(any(Long.class), any(UpdateWorkflowRequest.class));
+    }
+
+    @Test
+    void updateWorkflow_ShouldPassNullDescriptionToServiceWhenDescriptionIsOmitted() {
+        Long workflowId = 1L;
+
+        String requestJson = """
+            {
+              "name": "Updated Name"
+            }
+            """;
+
+        UpdateWorkflowRequest expectedRequest = new UpdateWorkflowRequest("Updated Name", null);
+
+        WorkflowResponse response = new WorkflowResponse(
+                workflowId, "Updated Name", null, WorkflowStatus.DRAFT, Instant.parse("2026-09-29T20:00:00Z"));
+
+        given(workflowService.updateWorkflow(workflowId, expectedRequest)).willReturn(response);
+
+        assertThat(mvcTester
+                        .put()
+                        .uri("/api/workflows/{id}", workflowId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .hasStatus(HttpStatus.OK);
+
+        then(workflowService).should().updateWorkflow(workflowId, expectedRequest);
     }
 }

@@ -45,7 +45,8 @@ public class WorkflowController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<WorkflowResponse> updateWorkflow(@PathVariable Long id, @Valid @RequestBody UpdateWorkflowRequest req) {
+    public ResponseEntity<WorkflowResponse> updateWorkflow(
+            @PathVariable Long id, @Valid @RequestBody UpdateWorkflowRequest req) {
         WorkflowResponse response = workflowService.updateWorkflow(id, req);
         return ResponseEntity.ok(response);
     }

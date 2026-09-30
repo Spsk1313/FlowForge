@@ -1,6 +1,7 @@
 package com.spsk1313.flowforge.workflow.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -41,5 +42,48 @@ class WorkflowTest {
         Workflow workflow = new Workflow("Process Orders", "   Processes incoming orders   ");
 
         assertEquals("Processes incoming orders", workflow.getDescription());
+    }
+
+    @Test
+    void rename_ShouldNormalizeAndUpdateName() {
+        Workflow workflow = new Workflow("Old Name", "Description");
+
+        workflow.rename("   New Name   ");
+
+        assertEquals("New Name", workflow.getName());
+    }
+
+    @Test
+    void rename_ShouldRejectBlankName() {
+        Workflow workflow = new Workflow("Old Name", "Description");
+
+        assertThrows(IllegalArgumentException.class, () -> workflow.rename("   "));
+    }
+
+    @Test
+    void updateDescription_ShouldNormalizeAndUpdateDescription() {
+        Workflow workflow = new Workflow("Workflow", "Old Description");
+
+        workflow.updateDescription("   New Description   ");
+
+        assertEquals("New Description", workflow.getDescription());
+    }
+
+    @Test
+    void updateDescription_ShouldAllowNull() {
+        Workflow workflow = new Workflow("Workflow", "Old Description");
+
+        workflow.updateDescription(null);
+
+        assertNull(workflow.getDescription());
+    }
+
+    @Test
+    void updateDescription_ShouldRejectDescriptionLongerThan500Characters() {
+        Workflow workflow = new Workflow("Workflow", "Old Description");
+
+        String invalidDescription = "a".repeat(501);
+
+        assertThrows(IllegalArgumentException.class, () -> workflow.updateDescription(invalidDescription));
     }
 }
