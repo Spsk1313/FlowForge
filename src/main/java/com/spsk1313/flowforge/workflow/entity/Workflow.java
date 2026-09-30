@@ -23,7 +23,6 @@ public class Workflow {
     @Column(length = MAX_DESCRIPTION_LENGTH)
     private String description;
 
-    @Generated(event = EventType.INSERT)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, insertable = false, length = 20)
     private WorkflowStatus status;
@@ -37,6 +36,7 @@ public class Workflow {
     public Workflow(String name, String description) {
         this.name = validateName(name);
         this.description = validateDescription(description);
+        this.status = WorkflowStatus.DRAFT;
     }
 
     private static String validateName(String name) {
@@ -87,7 +87,7 @@ public class Workflow {
     }
 
     private void ensureEditable() {
-        if(status != null && status != WorkflowStatus.DRAFT) {
+        if (status != WorkflowStatus.DRAFT) {
             throw new WorkflowNotEditableException();
         }
     }

@@ -93,23 +93,18 @@ class WorkflowTest {
         Workflow workflow = new Workflow("Old Name", "Description");
         workflow.activate();
 
-        assertThrows(
-                WorkflowNotEditableException.class,
-                () -> workflow.rename("New Name"));
+        assertThrows(WorkflowNotEditableException.class, () -> workflow.rename("New Name"));
 
         assertEquals("Old Name", workflow.getName());
     }
 
     @Test
     void updateDescription_ShouldRejectUpdateWhenWorkflowIsActive() {
-        Workflow workflow =
-                new Workflow("Workflow", "Old Description");
+        Workflow workflow = new Workflow("Workflow", "Old Description");
 
         workflow.activate();
 
-        assertThrows(
-                WorkflowNotEditableException.class,
-                () -> workflow.updateDescription("New Description"));
+        assertThrows(WorkflowNotEditableException.class, () -> workflow.updateDescription("New Description"));
 
         assertEquals("Old Description", workflow.getDescription());
     }
