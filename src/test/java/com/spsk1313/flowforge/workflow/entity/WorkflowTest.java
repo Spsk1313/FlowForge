@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.spsk1313.flowforge.workflow.exception.WorkflowNotEditableException;
 import org.junit.jupiter.api.Test;
 
 class WorkflowTest {
@@ -85,5 +86,31 @@ class WorkflowTest {
         String invalidDescription = "a".repeat(501);
 
         assertThrows(IllegalArgumentException.class, () -> workflow.updateDescription(invalidDescription));
+    }
+
+    @Test
+    void rename_ShouldRejectUpdateWhenWorkflowIsActive() {
+        Workflow workflow = new Workflow("Old Name", "Description");
+        workflow.activate();
+
+        assertThrows(
+                WorkflowNotEditableException.class,
+                () -> workflow.rename("New Name"));
+
+        assertEquals("Old Name", workflow.getName());
+    }
+
+    @Test
+    void updateDescription_ShouldRejectUpdateWhenWorkflowIsActive() {
+        Workflow workflow =
+                new Workflow("Workflow", "Old Description");
+
+        workflow.activate();
+
+        assertThrows(
+                WorkflowNotEditableException.class,
+                () -> workflow.updateDescription("New Description"));
+
+        assertEquals("Old Description", workflow.getDescription());
     }
 }
