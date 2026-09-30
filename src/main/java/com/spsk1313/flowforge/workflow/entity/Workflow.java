@@ -24,7 +24,7 @@ public class Workflow {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, insertable = false, length = 20)
+    @Column(nullable = false, length = 20)
     private WorkflowStatus status;
 
     @Generated(event = EventType.INSERT)

@@ -108,4 +108,11 @@ class WorkflowTest {
 
         assertEquals("Old Description", workflow.getDescription());
     }
+
+    @Test
+    void shouldCreateWorkflowWithDraftStatus() {
+        Workflow workflow = new Workflow("Workflow", "Description");
+
+        assertEquals(WorkflowStatus.DRAFT, workflow.getStatus());
+    }
 }

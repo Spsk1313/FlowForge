@@ -10,6 +10,7 @@ import com.spsk1313.flowforge.workflow.dto.CreateWorkflowRequest;
 import com.spsk1313.flowforge.workflow.dto.UpdateWorkflowRequest;
 import com.spsk1313.flowforge.workflow.dto.WorkflowResponse;
 import com.spsk1313.flowforge.workflow.entity.WorkflowStatus;
+import com.spsk1313.flowforge.workflow.exception.WorkflowNotEditableException;
 import com.spsk1313.flowforge.workflow.exception.WorkflowNotFoundException;
 import com.spsk1313.flowforge.workflow.service.WorkflowService;
 import java.time.Instant;
@@ -304,5 +305,66 @@ class WorkflowControllerTest {
                 .hasStatus(HttpStatus.OK);
 
         then(workflowService).should().updateWorkflow(workflowId, expectedRequest);
+    }
+
+    @Test
+    void activateWorkflow_ShouldReturnActiveWorkflowAnd200() {
+        Long workflowId = 1L;
+        Instant createdAt = Instant.parse("2026-09-29T20:00:00Z");
+
+        WorkflowResponse response =
+                new WorkflowResponse(workflowId, "Test Workflow", "Test Description", WorkflowStatus.ACTIVE, createdAt);
+
+        given(workflowService.activate(workflowId)).willReturn(response);
+
+        assertThat(mvcTester
+                        .post()
+                        .uri("/api/workflows/{id}/activate", workflowId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .hasStatus(HttpStatus.OK)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .isLenientlyEqualTo("""
+                    {
+                      "id": 1,
+                      "name": "Test Workflow",
+                      "description": "Test Description",
+                      "status": "ACTIVE",
+                      "createdAt": "2026-09-29T20:00:00Z"
+                    }
+                    """);
+
+        then(workflowService).should().activate(workflowId);
+    }
+
+    @Test
+    void activateWorkflow_ShouldReturn404WhenWorkflowDoesNotExist() {
+        Long workflowId = 999L;
+
+        given(workflowService.activate(workflowId)).willThrow(new WorkflowNotFoundException(workflowId));
+
+        assertThat(mvcTester.post().uri("/api/workflows/{id}/activate", workflowId))
+                .hasStatus(HttpStatus.NOT_FOUND);
+
+        then(workflowService).should().activate(workflowId);
+    }
+
+    @Test
+    void updateWorkflow_ShouldReturn409WhenWorkflowIsNotEditable() throws Exception {
+
+        Long workflowId = 1L;
+
+        UpdateWorkflowRequest request = new UpdateWorkflowRequest("Updated Name", "Updated Description");
+
+        given(workflowService.updateWorkflow(workflowId, request)).willThrow(new WorkflowNotEditableException());
+
+        assertThat(mvcTester
+                        .put()
+                        .uri("/api/workflows/{id}", workflowId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .hasStatus(HttpStatus.CONFLICT);
+
+        then(workflowService).should().updateWorkflow(workflowId, request);
     }
 }
