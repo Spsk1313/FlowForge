@@ -27,7 +27,7 @@ public class WorkflowService {
     }
 
     public WorkflowResponse getWorkflowById(Long id) {
-        Workflow workflow = workflowRepository.findById(id).orElseThrow(() -> new WorkflowNotFoundException(id));
+        Workflow workflow = findWorkflowOrThrow(id);
         return toResponse(workflow);
     }
 
@@ -41,12 +41,25 @@ public class WorkflowService {
 
     @Transactional
     public WorkflowResponse updateWorkflow(Long id, UpdateWorkflowRequest req) {
-        Workflow workflow = workflowRepository.findById(id).orElseThrow(() -> new WorkflowNotFoundException(id));
+        Workflow workflow = findWorkflowOrThrow(id);
 
         workflow.rename(req.name());
         workflow.updateDescription(req.description());
 
         return toResponse(workflow);
+    }
+
+    @Transactional
+    public WorkflowResponse activate(Long id) {
+        Workflow workflow = findWorkflowOrThrow(id);
+
+        workflow.activate();
+
+        return toResponse(workflow);
+    }
+
+    private Workflow findWorkflowOrThrow(Long id) {
+        return workflowRepository.findById(id).orElseThrow(() -> new WorkflowNotFoundException(id));
     }
 
     private WorkflowResponse toResponse(Workflow workflow) {
