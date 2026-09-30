@@ -1,5 +1,6 @@
 package com.spsk1313.flowforge.workflow.entity;
 
+import com.spsk1313.flowforge.workflow.exception.WorkflowNotEditableException;
 import jakarta.persistence.*;
 import java.time.Instant;
 import org.hibernate.annotations.Generated;
@@ -72,11 +73,23 @@ public class Workflow {
     }
 
     public void rename(String name) {
+        ensureEditable();
         this.name = validateName(name);
     }
 
     public void updateDescription(String description) {
+        ensureEditable();
         this.description = validateDescription(description);
+    }
+
+    public void activate() {
+        this.status = WorkflowStatus.ACTIVE;
+    }
+
+    private void ensureEditable() {
+        if(status != null && status != WorkflowStatus.DRAFT) {
+            throw new WorkflowNotEditableException();
+        }
     }
 
     public Long getId() {
