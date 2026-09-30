@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/workflows")
 public class WorkflowController {
@@ -32,6 +34,12 @@ public class WorkflowController {
     @GetMapping("/{id}")
     public ResponseEntity<WorkflowResponse> getWorkflowById(@PathVariable Long id) {
         WorkflowResponse response = workflowService.getWorkflowById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<WorkflowResponse>> getAllWorkflows() {
+        List<WorkflowResponse> response = workflowService.getAllWorkflows();
         return ResponseEntity.ok(response);
     }
 }
