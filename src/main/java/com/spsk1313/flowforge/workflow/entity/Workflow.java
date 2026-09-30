@@ -71,6 +71,14 @@ public class Workflow {
         return normalizedDescription;
     }
 
+    public void rename(String name) {
+        this.name = validateName(name);
+    }
+
+    public void updateDescription(String description) {
+        this.description = validateDescription(description);
+    }
+
     public Long getId() {
         return id;
     }

@@ -1,6 +1,7 @@
 package com.spsk1313.flowforge.workflow.service;
 
 import com.spsk1313.flowforge.workflow.dto.CreateWorkflowRequest;
+import com.spsk1313.flowforge.workflow.dto.UpdateWorkflowRequest;
 import com.spsk1313.flowforge.workflow.dto.WorkflowResponse;
 import com.spsk1313.flowforge.workflow.entity.Workflow;
 import com.spsk1313.flowforge.workflow.exception.WorkflowNotFoundException;
@@ -8,6 +9,7 @@ import com.spsk1313.flowforge.workflow.repository.WorkflowRepository;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WorkflowService {
@@ -35,6 +37,16 @@ public class WorkflowService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public WorkflowResponse updateWorkflow(Long id, UpdateWorkflowRequest req) {
+        Workflow workflow = workflowRepository.findById(id).orElseThrow(() -> new WorkflowNotFoundException(id));
+
+        workflow.rename(req.name());
+        workflow.updateDescription(req.description());
+
+        return toResponse(workflow);
     }
 
     private WorkflowResponse toResponse(Workflow workflow) {
