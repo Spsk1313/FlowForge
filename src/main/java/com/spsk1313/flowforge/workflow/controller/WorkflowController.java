@@ -50,4 +50,10 @@ public class WorkflowController {
         WorkflowResponse response = workflowService.updateWorkflow(id, req);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/{id}/activate")
+    public ResponseEntity<WorkflowResponse> activate(@PathVariable Long id) {
+        WorkflowResponse response = workflowService.activate(id);
+        return ResponseEntity.ok(response);
+    }
 }

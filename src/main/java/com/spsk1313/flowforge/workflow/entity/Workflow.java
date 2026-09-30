@@ -1,5 +1,6 @@
 package com.spsk1313.flowforge.workflow.entity;
 
+import com.spsk1313.flowforge.workflow.exception.WorkflowNotEditableException;
 import jakarta.persistence.*;
 import java.time.Instant;
 import org.hibernate.annotations.Generated;
@@ -22,9 +23,8 @@ public class Workflow {
     @Column(length = MAX_DESCRIPTION_LENGTH)
     private String description;
 
-    @Generated(event = EventType.INSERT)
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, insertable = false, length = 20)
+    @Column(nullable = false, length = 20)
     private WorkflowStatus status;
 
     @Generated(event = EventType.INSERT)
@@ -36,6 +36,7 @@ public class Workflow {
     public Workflow(String name, String description) {
         this.name = validateName(name);
         this.description = validateDescription(description);
+        this.status = WorkflowStatus.DRAFT;
     }
 
     private static String validateName(String name) {
@@ -72,11 +73,23 @@ public class Workflow {
     }
 
     public void rename(String name) {
+        ensureEditable();
         this.name = validateName(name);
     }
 
     public void updateDescription(String description) {
+        ensureEditable();
         this.description = validateDescription(description);
+    }
+
+    public void activate() {
+        this.status = WorkflowStatus.ACTIVE;
+    }
+
+    private void ensureEditable() {
+        if (status != WorkflowStatus.DRAFT) {
+            throw new WorkflowNotEditableException();
+        }
     }
 
     public Long getId() {
